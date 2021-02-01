@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot name="lidar_module" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:property name = "lidar_radius" value = "0.03"/>
+    <xacro:property name = "lidar_length" value = "0.04"/>
+    <xacro:property name = "lidar_pos_x" value = "0.08"/>
+
+    <link name="lidar_mount">
+        <xacro:inertial_matrix mass = "2"/>
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder radius="${lidar_radius}" length="${lidar_length}"/>
+            </geometry>
+            <material name = "red"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <cylinder radius="${lidar_radius}" length="${lidar_length}"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name = "lidar_mount_joint" type = "fixed">
+        <origin xyz = "${lidar_pos_x} 0.0 ${(robot_body_z / 2) + 0.03 + (lidar_length / 2)}" rpy = "0.0 0.0 0.0"/>
+        <parent link="base_link"/>
+        <child link="lidar_mount"/>
+    </joint>
+        
+    <link name = "lidar"/>
+
+    <joint name = "lidar_fixed_joint" type = "fixed">
+        <parent link="lidar_mount"/>
+        <child link="lidar"/>
+        <origin xyz = "0.0 0.0 0.0" rpy = "0.0 0.0 0.0" />
+    </joint>
+
+</robot>

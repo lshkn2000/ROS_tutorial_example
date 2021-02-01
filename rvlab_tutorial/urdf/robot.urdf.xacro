@@ -1,0 +1,147 @@
+<?xml version="1.0" ?>
+<robot name="mobile_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!--math-->
+    <xacro:property name = "PI" value = "3.1415926535897931"/>
+    
+    <!--wheel-->
+    <xacro:property name = "wheel_radius" value = "0.035"/>
+    <xacro:property name = "wheel_length" value = "0.03"/>
+    <xacro:property name = "wheel_pos_width" value = "0.08"/>
+    <xacro:property name = "wheel_pos_length" value = "0.145"/>
+
+    <!--robot_body-->
+    <xacro:property name = "ground_offset" value = "0.03"/>
+    <xacro:property name="robot_body_x" value="0.3"/>
+    <xacro:property name="robot_body_y" value="0.26"/>
+    <xacro:property name="robot_body_z" value="0.1"/>
+
+    <!--inertial-->
+    <xacro:macro name ="inertial_matrix" params="mass">
+        <inertial>
+            <mass value="${mass}"/>
+            <inertia ixx="1." ixy="0.0" ixz="0.0"
+                      iyy="1." iyz="0.0"
+                      izz="1." />
+        </inertial>
+    </xacro:macro>
+
+    <!-- color -->
+    <material name = "yellow"><color rgba="0.8 0.8 0.0 1.0"/></material>
+    <material name = "red"><color rgba="1.0 0.0 0.0 0.0"/></material>
+    <material name = "blue"><color rgba="0.0 0.0 1.0 0.0"/></material>
+    
+
+    <!-- wheel -->
+    <xacro:macro name = "wheel" params="prefix *joint_pose">
+        <link name = "${prefix}_wheel_link">
+            <visual>
+                <origin xyz="0.0 0.0 0.0" rpy="${PI / 2} 0.0 0.0"/>
+                <geometry>
+                    <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+                </geometry>
+                <material name="yellow"/>
+            </visual>
+            <collision>
+                <origin xyz="0.0 0.0 0.0" rpy="${PI / 2} 0.0 0.0"/>
+                <geometry>
+                    <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+                </geometry>              
+            </collision>
+            <xacro:inertial_matrix mass="5"/>
+        </link>
+
+        <gazebo reference="${prefix}_wheel_link">
+            <material>Gazebo/DarkGrey</material>
+            <selfCollide>false</selfCollide>
+            <mu1 value="0.5"/>
+            <mu2 value="0.5"/>
+            <kp value="10000000.0" />
+            <kd value="1" />
+            <fdir1 value="1 0 0"/>
+        </gazebo>
+
+        <joint name="${prefix}_wheel" type="continuous">
+            <parent link="base_link"/>
+            <child link="${prefix}_wheel_link" />
+            <xacro:insert_block name="joint_pose" />
+            <axis xyz="0 1 0" />
+        </joint>
+    </xacro:macro>
+
+    <!-- transmission -->
+    <xacro:macro name="velocity_transmission" params = "prefix">
+        <transmission name = "${prefix}_trans">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name = "${prefix}_wheel">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
+            </joint>
+
+            <actuator name = "${prefix}_motor">
+                <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+    </xacro:macro> 
+
+    <!--  Bring Gazebo Plugin -->
+    <xacro:include filename= "$(find rvlab_tutorial)/urdf/robot.gazebo"/>
+
+    <!-- Bring Lidar -->
+    <xacro:include filename= "$(find rvlab_tutorial)/urdf/lidar.urdf.xacro"/>
+
+    <!-- Bring Camera -->
+    <xacro:include filename = "$(find rvlab_tutorial)/urdf/camera.urdf.xacro"/>
+
+            
+    
+
+<!-- robot -->
+	<link name="base_footprint"/>
+	<link name="base_link">
+        <visual>
+            <xacro:inertial_matrix mass="30"/>
+            <origin xyz="0 0 ${ground_offset}" rpy="0 0 0"/>
+            <geometry>
+                <box size="${robot_body_x} ${robot_body_y} ${robot_body_z}"/>
+            </geometry>
+            <material name="gray">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.03" rpy="0 0 0"/>
+            <geometry>
+                <box size="${robot_body_x} ${robot_body_y} ${robot_body_z}"/>
+            </geometry>
+        </collision>
+	</link>
+
+    <joint name="base_footprint_fixed" type="fixed">
+        <origin xyz="0 0 ${ground_offset}" rpy="0 0 0" />
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+    </joint>
+
+    <!-- wheel setting-->
+
+    <xacro:wheel prefix="front_left">
+        <origin xyz="${-wheel_pos_width} ${wheel_pos_length} 0.0" rpy="0 0 0"/>
+    </xacro:wheel>
+    <xacro:wheel prefix="front_right">
+        <origin xyz="${-wheel_pos_width} ${-wheel_pos_length} 0.0" rpy="0 0 0"/>
+    </xacro:wheel>
+    <xacro:wheel prefix="rear_left">
+        <origin xyz="${wheel_pos_width} ${wheel_pos_length} 0.0" rpy="0 0 0"/>
+    </xacro:wheel>
+    <xacro:wheel prefix="rear_right">
+        <origin xyz="${wheel_pos_width} ${-wheel_pos_length} 0.0" rpy="0 0 0"/>
+    </xacro:wheel>
+
+    <xacro:velocity_transmission prefix = "front_left"/>
+    <xacro:velocity_transmission prefix = "front_right"/>
+    <xacro:velocity_transmission prefix = "rear_left"/>
+    <xacro:velocity_transmission prefix = "rear_right"/>
+
+
+</robot>

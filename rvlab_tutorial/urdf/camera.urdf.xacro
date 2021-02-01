@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<robot name="camera_module" xmlns:xacro = "http://www.ros.org/wiki/xacro">
+    
+
+    <link name="camera_link">
+        <xacro:inertial_matrix mass= "0.05"/>
+        <visual>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <mesh filename = "package://rvlab_tutorial/mesh/camera.STL"/>
+            </geometry>
+            <material name="blue"/>
+        </visual>
+        <collision>
+            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <mesh filename = "package://rvlab_tutorial/mesh/camera.STL"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <joint name="camera_joint" type="fixed">
+        <origin xyz="${robot_body_x / 2} 0.0 ${robot_body_z / 2}" rpy="0.0 0.0 0.0"/>
+        <parent link="base_link"/>
+        <child link="camera_link"/>
+    </joint>
+    
+</robot>
